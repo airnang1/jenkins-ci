@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: JAVA_OPTS
+          value: -Xmx2048m -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85
+        ports:
+        - name: http-port
+          containerPort: 8080
+        - name: jnlp-port
+          containerPort: 50000
+        volumeMounts: 
+        - name: jenkins-home
+          mountPath: /var/jenkins_home
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+          readOnly: true 
+        - name: docker
+          mountPath: /usr/sbin/docker
+      restartPolicy: Always
+      securityContext:
+        runAsUser: 0
+        fsGroup: 1000
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: jenkins-home 
+        hostPath:
+          path: /data/jenkins_home
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+      - name: docker
+        hostPath:
+          path: /usr/bin/docker
+      
