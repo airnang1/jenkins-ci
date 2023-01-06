@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   name: jenkins
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: jenkins
@@ -18,6 +18,9 @@ spec:
       labels:
         app: jenkins
     spec:
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
       containers:
       - name: jenkins
         image: jenkins/jenkins:lts
@@ -38,10 +41,13 @@ spec:
           readOnly: true 
         - name: docker
           mountPath: /usr/sbin/docker
+        livenessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
       restartPolicy: Always
-      securityContext:
-        runAsUser: 0
-        fsGroup: 1000
       terminationGracePeriodSeconds: 30
       volumes:
       - name: jenkins-home 
@@ -53,4 +59,5 @@ spec:
       - name: docker
         hostPath:
           path: /usr/bin/docker
-      
+      nodeSelector:
+        disktype: ssd
