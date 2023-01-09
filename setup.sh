@@ -1,4 +1,2 @@
-kubectl create namespace jenkins
-
-kubectl create -f jenkins-deployment.yaml
-kubectl create -f jenkins-service.yaml
+kubectl create -f jenkins-deployment.yaml -n jenkins
+kubectl create -f jenkins-service.yaml -n jenkins
