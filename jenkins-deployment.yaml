@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,10 +21,14 @@ spec:
     spec:
       securityContext:
         runAsUser: 0
+        fsGroup: 1000
       containers:
       - name: jenkins
-        image: jenkinsci/blueocean:lts
+        image: jenkins/jenkins:lts
         imagePullPolicy: IfNotPresent
+        # env:
+        # - name: JAVA_OPTS
+          # value: -Xmx2048m -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85
         ports:
         - name: http-port
           containerPort: 8080
@@ -37,6 +42,12 @@ spec:
           readOnly: true 
         - name: docker
           mountPath: /usr/sbin/docker
+        livenessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       volumes:
@@ -49,5 +60,5 @@ spec:
       - name: docker
         hostPath:
           path: /usr/bin/docker
-      nodeSelector:
-        disktype: hdd
+      # nodeSelector:
+        # disktype: ssd
